@@ -3,13 +3,14 @@ using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
 
+// PlayerController handles player movement, camera, and wallet address display (HUD and 3D overhead)
 public class PlayerController : NetworkBehaviour
 {
+    // Movement and camera
     public float moveSpeed = 5f;
     private Camera _playerCamera;
     public float mouseSensitivity = 2f;
     private float _xRotation = 0f;
-
     private CharacterController _controller;
 
     public NetworkVariable<FixedString64Bytes> walletAddress = new NetworkVariable<FixedString64Bytes>(
@@ -17,7 +18,7 @@ public class PlayerController : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
-    public TMP_Text usernameText;
+    [SerializeField] public TMP_Text usernameText, balanceText, overheadNameText;
 
     private bool _cameraRotationEnabled = true;
 
@@ -25,7 +26,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (usernameText == null)
         {
-            // Find the TMP_Text in children named "Username"
             foreach (var text in GetComponentsInChildren<TMP_Text>(true))
             {
                 if (text.gameObject.name.ToLower().Contains("user"))
@@ -44,34 +44,33 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         _controller = GetComponent<CharacterController>();
-        // Find camera
         _playerCamera = GetComponentInChildren<Camera>(true);
         if (IsOwner && _playerCamera != null)
-        {
             _playerCamera.gameObject.SetActive(true);
-        }
         else if (_playerCamera != null)
-        {
             _playerCamera.gameObject.SetActive(false);
-        }
 
         walletAddress.OnValueChanged += OnAddressChanged;
-        if (usernameText != null)
-        {
-            usernameText.text = FormatAddress(walletAddress.Value.ToString());
-        }
+        // Set initial UI
+        string formatted = FormatAddress(walletAddress.Value.ToString());
+        if (IsOwner && usernameText != null)
+            usernameText.text = formatted;
+        if (overheadNameText != null)
+            overheadNameText.text = formatted;
     }
 
     private void OnAddressChanged(FixedString64Bytes prev, FixedString64Bytes curr)
     {
-        if (usernameText != null)
-        {
-            usernameText.text = FormatAddress(curr.ToString());
-        }
+        string formatted = FormatAddress(curr.ToString());
+        if (IsOwner && usernameText != null)
+            usernameText.text = formatted;
+        if (overheadNameText != null)
+            overheadNameText.text = formatted;
     }
 
     private string FormatAddress(string address)
     {
+        // Shorten address for display (0x123...abc)
         if (string.IsNullOrEmpty(address) || address.Length < 8) return address;
         return $"{address.Substring(0, 5)}...{address.Substring(address.Length - 3)}";
     }
@@ -83,17 +82,17 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
-        if (usernameText != null)
-        {
-            usernameText.text = FormatAddress(walletAddress.Value.ToString());
-        }
+        string formatted = FormatAddress(walletAddress.Value.ToString());
+        if (IsOwner && usernameText != null)
+            usernameText.text = formatted;
+        if (overheadNameText != null)
+            overheadNameText.text = formatted;
     }
 
     void Update()
     {
         if (!IsOwner)
             return;
-
         // Mouse look (FPP) - only if camera rotation is enabled
         if (_cameraRotationEnabled)
         {
@@ -102,32 +101,23 @@ public class PlayerController : NetworkBehaviour
             _xRotation -= mouseY;
             _xRotation = Mathf.Clamp(_xRotation, -90f, 90f);
             if (_playerCamera != null)
-            {
                 _playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
-            }
             transform.Rotate(Vector3.up * mouseX);
         }
-
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-
         Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput);
         moveDirection.Normalize();
-
         if (_controller != null)
-        {
             _controller.Move(transform.TransformDirection(moveDirection) * moveSpeed * Time.deltaTime);
-        }
         else
-        {
             transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.Self);
-        }
     }
 
+    // Only the owner can set their own address
     [ServerRpc]
     public void SetAddressServerRpc(string address, ServerRpcParams rpcParams = default)
     {
-        // Only allow the owner client to set their own address
         if (OwnerClientId != rpcParams.Receive.SenderClientId) return;
         walletAddress.Value = address;
     }
@@ -135,5 +125,20 @@ public class PlayerController : NetworkBehaviour
     public void SetCameraRotationEnabled(bool enabled)
     {
         _cameraRotationEnabled = enabled;
+    }
+
+    // Update HUD and overhead name
+    public void SetAddressHUD(string address)
+    {
+        if (IsOwner && usernameText != null)
+            usernameText.text = FormatAddress(address);
+        if (overheadNameText != null)
+            overheadNameText.text = FormatAddress(address);
+    }
+
+    public void SetBalanceHUD(string balance)
+    {
+        if (IsOwner && balanceText != null)
+            balanceText.text = balance;
     }
 }
