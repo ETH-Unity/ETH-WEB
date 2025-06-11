@@ -19,6 +19,7 @@ public class WalletLogin : MonoBehaviour
     [SerializeField] private TMP_InputField privateKeyInputField;
     private string rpcUrl = "http://localhost:8545/";
     private PlayerController _playerController;
+    public string WalletAddress { get; private set; }
 
     void Awake()
     {
@@ -100,6 +101,8 @@ public class WalletLogin : MonoBehaviour
     // Called from JS (WebGL) or after login (Editor): sets address, updates UI, fetches balance
     public void OnWalletConnected(string address)
     {
+        WalletAddress = address;
+        Debug.Log("✅ WalletLogin.OnWalletConnected kutsuttu osoitteella: " + address);
         SetNetworkedAddress(address);
         UpdatePlayerUI(address, null);
         FetchBalance(address);

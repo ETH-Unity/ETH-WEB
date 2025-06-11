@@ -12,6 +12,33 @@ mergeInto(LibraryManager.library, {
     }
   },
 
+  CallContractFunction: function(toPtr, dataPtr) {
+    const to = UTF8ToString(toPtr);
+    const data = UTF8ToString(dataPtr);
+
+    if (typeof window.ethereum !== "undefined") {
+      const callParams = {
+        to: to,
+        data: data,
+      };
+
+      window.ethereum.request({
+        method: "eth_call",
+        params: [callParams, "latest"],
+      })
+      .then((result) => {
+        console.log("Contract call result:", result);
+        // Vaihda oikea GameObject-nimi alla:
+        SendMessage("DoorAccess", "OnDoorAccessResult", result);
+      })
+      .catch((error) => {
+        console.error("Contract call failed:", error);
+      });
+    } else {
+      console.warn("MetaMask not found");
+    }
+  },
+
   ConnectWallet: function () {
     var target = window.walletLoginObjectName || "WalletLogin";
     if (typeof window.ethereum !== 'undefined') {
@@ -52,6 +79,35 @@ mergeInto(LibraryManager.library, {
           SendMessage(target, 'OnBalanceErrorStatic', error.message);
         }
       });
+    }
+  }, 
+
+  SendTransaction: function (toPtr, dataPtr, valuePtr) {
+    const to = UTF8ToString(toPtr);
+    const data = UTF8ToString(dataPtr);
+    const value = UTF8ToString(valuePtr); // in hex, e.g. "0x0"
+
+    if (typeof window.ethereum !== "undefined") {
+      const txParams = {
+        to: to,
+        from: ethereum.selectedAddress,
+        data: data,
+        value: value,
+      };
+
+      ethereum
+        .request({
+          method: "eth_sendTransaction",
+          params: [txParams],
+        })
+        .then((txHash) => {
+          console.log("Transaction sent:", txHash);
+        })
+        .catch((error) => {
+          console.error("Transaction failed:", error);
+        });
+    } else {
+      console.warn("MetaMask not found");
     }
   }
 });

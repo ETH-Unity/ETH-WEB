@@ -10,9 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6562707566322908845}
   - component: {fileID: 5252450674147549821}
-  - component: {fileID: 60463311887911837}
-  - component: {fileID: 7462852245571967546}
   - component: {fileID: 3265636246947738057}
+  - component: {fileID: 8592173273997596768}
   m_Layer: 0
   m_Name: Door_Hinge
   m_TagString: Untagged
@@ -48,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 725680601
+  GlobalObjectIdHash: 2094502
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -61,42 +60,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &60463311887911837
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1075850090532464275}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce138df5a11ddcc46a416179350616bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  openAngle: 90
-  openSpeed: 2
-  interactionRange: 3
-  doorSigner: {fileID: 7462852245571967546}
-  isPhysicalDoor: 1
-  doorName: DigitalDoor
-  closedRotation: {x: 0, y: 0, z: 0, w: 0}
-  openRotation: {x: 0, y: 0, z: 0, w: 0}
-  isOpen:
-    m_InternalValue: 0
---- !u!114 &7462852245571967546
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1075850090532464275}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc24996791cd8fc459bb6519c024244b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isPhysicalDoor: 0
 --- !u!135 &3265636246947738057
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -118,6 +81,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 4
   m_Center: {x: 0, y: 0, z: -1}
+--- !u!114 &8592173273997596768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075850090532464275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecacfb425aec4c4fbfc00929c46ef6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contractAddress: 
+  statusText: {fileID: 0}
+  doorGameObject: {fileID: 0}
+  playerTransform: {fileID: 0}
+  activationDistance: 2.5
+  openOffset: {x: 1.5, y: 0, z: 0}
+  moveSpeed: 1
 --- !u!1 &7384440182360425420
 GameObject:
   m_ObjectHideFlags: 0

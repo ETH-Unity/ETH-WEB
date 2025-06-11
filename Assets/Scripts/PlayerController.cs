@@ -12,6 +12,9 @@ public class PlayerController : NetworkBehaviour
     public float mouseSensitivity = 2f;
     private float _xRotation = 0f;
     private CharacterController _controller;
+    private float verticalVelocity = 0f;
+    private float gravity = -9.81f;
+
 
     public NetworkVariable<FixedString64Bytes> walletAddress = new NetworkVariable<FixedString64Bytes>(
         "",
@@ -93,7 +96,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner)
             return;
-        // Mouse look (FPP) - only if camera rotation is enabled
+    
+        // Mouse look
         if (_cameraRotationEnabled)
         {
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -104,15 +108,32 @@ public class PlayerController : NetworkBehaviour
                 _playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
             transform.Rotate(Vector3.up * mouseX);
         }
+    
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
+    
         Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput);
+        moveDirection = transform.TransformDirection(moveDirection);
         moveDirection.Normalize();
+    
+        // Gravity
+        if (_controller != null && !_controller.isGrounded)
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+        else if (_controller != null && _controller.isGrounded)
+        {
+            verticalVelocity = -1f; // pieni painovoima pitää pelaajan maassa
+        }
+    
+        Vector3 finalMove = moveDirection * moveSpeed + Vector3.up * verticalVelocity;
+    
         if (_controller != null)
-            _controller.Move(transform.TransformDirection(moveDirection) * moveSpeed * Time.deltaTime);
+            _controller.Move(finalMove * Time.deltaTime);
         else
-            transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.Self);
+            transform.Translate(finalMove * Time.deltaTime, Space.World);
     }
+
 
     // Only the owner can set their own address
     [ServerRpc]
