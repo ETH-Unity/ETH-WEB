@@ -2,8 +2,9 @@ using System;
 using UnityEngine;
 using TMPro;
 using UnityEngine.EventSystems;
+using Unity.Netcode;
 
-public class DoorAccessController : MonoBehaviour
+public class DoorAccessController : NetworkBehaviour
 {
     [Header("Contract Settings")]
     [SerializeField] private string contractAddress;
@@ -13,19 +14,73 @@ public class DoorAccessController : MonoBehaviour
     [SerializeField] private Vector3 openOffset = new Vector3(1.5f, 0, 0);
     [SerializeField] private float moveSpeed = 1f;
 
-    private bool shouldMove = false;
-    private bool hasAccess = false;
-    private bool doorOpened = false;
-    private bool isPlayerNearby = false;
-    private Vector3 targetPosition;
     private Vector3 closedPosition;
+    private Vector3 targetPosition;
+    private bool isPlayerNearby = false;
+    private bool hasAccess = false;
     private WalletLogin walletLogin;
-    
+
+    private bool shouldMove = false;
+
+    private NetworkVariable<bool> isDoorOpen = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     private void Start()
     {
         if (doorGameObject != null)
         {
             closedPosition = doorGameObject.transform.position;
+        }
+    }
+
+    private void Update()
+    {
+        if (!IsServer) return;
+
+        if (shouldMove && doorGameObject != null)
+        {
+            doorGameObject.transform.position = Vector3.MoveTowards(
+                doorGameObject.transform.position,
+                targetPosition,
+                Time.deltaTime * moveSpeed
+            );
+
+            if (Vector3.Distance(doorGameObject.transform.position, targetPosition) < 0.01f)
+            {
+                shouldMove = false;
+                Debug.Log(isDoorOpen.Value ? "✅ Door fully opened." : "✅ Door fully closed.");
+            }
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (isPlayerNearby && EventSystem.current.currentSelectedGameObject == null)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (!isDoorOpen.Value)
+                {
+                    if (!hasAccess)
+                    {
+                        Debug.Log("🔍 Checking access before opening the door...");
+                        CheckDoorAccess();
+                    }
+                    else
+                    {
+                        Debug.Log("✅ Access already verified – sending ServerRpc to open door.");
+                        OpenDoorServerRpc();
+                    }
+                }
+                else
+                {
+                    Debug.Log("🔒 Door is open – sending ServerRpc to close door.");
+                    CloseDoorServerRpc();
+                }
+            }
         }
     }
 
@@ -63,10 +118,9 @@ public class DoorAccessController : MonoBehaviour
             Debug.Log("✅ User has access to open the door.");
             hasAccess = true;
 
-            if (isPlayerNearby && !doorOpened)
+            if (isPlayerNearby && !isDoorOpen.Value)
             {
-                Debug.Log("🔓 Automatically opening the door after access granted.");
-                OpenDoor();
+                OpenDoorServerRpc();
             }
         }
         else
@@ -75,82 +129,24 @@ public class DoorAccessController : MonoBehaviour
         }
     }
 
-    private void OpenDoor()
+    [ServerRpc(RequireOwnership = false)]
+    private void OpenDoorServerRpc()
     {
-        if (doorGameObject != null)
-        {
-            Debug.Log("▶️ Starting door opening movement (position).");
-            targetPosition = doorGameObject.transform.position + openOffset;
-            shouldMove = true;
-            doorOpened = true;
-        }
-        else
-        {
-            Debug.LogWarning("⚠️ Door object not found.");
-        }
+        if (doorGameObject == null) return;
+
+        targetPosition = closedPosition + openOffset;
+        shouldMove = true;
+        isDoorOpen.Value = true;
     }
 
-    private void Update()
+    [ServerRpc(RequireOwnership = false)]
+    private void CloseDoorServerRpc()
     {
-        if (isPlayerNearby)
-        {
-            if (EventSystem.current.currentSelectedGameObject == null)
-            {
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    Debug.Log("🟢 Player pressed E");
+        if (doorGameObject == null) return;
 
-                    if (!doorOpened)
-                    {
-                        if (!hasAccess)
-                        {
-                            Debug.Log("🔍 Checking access before opening the door...");
-                            CheckDoorAccess();
-                        }
-                        else
-                        {
-                            Debug.Log("✅ Access already verified – opening the door.");
-                            OpenDoor();
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("🔒 Closing the door.");
-                        CloseDoor();
-                    }
-                }
-            }
-        }
-
-        if (shouldMove && doorGameObject != null)
-        {
-            doorGameObject.transform.position = Vector3.MoveTowards(
-                doorGameObject.transform.position,
-                targetPosition,
-                Time.deltaTime * moveSpeed
-            );
-
-            if (Vector3.Distance(doorGameObject.transform.position, targetPosition) < 0.01f)
-            {
-                Debug.Log(doorOpened ? "✅ Door fully opened." : "✅ Door fully closed.");
-                shouldMove = false;
-            }
-        }
-    }
-
-    private void CloseDoor()
-    {
-        if (doorGameObject != null)
-        {
-            Debug.Log("▶️ Starting door closing movement.");
-            targetPosition = closedPosition;
-            shouldMove = true;
-            doorOpened = false;
-        }
-        else
-        {
-            Debug.LogWarning("⚠️ Door object not found for closing.");
-        }
+        targetPosition = closedPosition;
+        shouldMove = true;
+        isDoorOpen.Value = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -165,7 +161,7 @@ public class DoorAccessController : MonoBehaviour
                 walletLogin = other.GetComponentInChildren<WalletLogin>();
                 if (walletLogin != null)
                 {
-                    Debug.Log("🔗 WalletLogin referenced from trigger. " + walletLogin.WalletAddress);
+                    Debug.Log("🔗 WalletLogin referenced from trigger: " + walletLogin.WalletAddress);
                 }
                 else
                 {
