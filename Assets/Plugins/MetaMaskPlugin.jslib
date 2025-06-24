@@ -13,25 +13,21 @@ mergeInto(LibraryManager.library, {
   },
 
   CallContractFunction: function(toPtr, dataPtr) {
-    const to = UTF8ToString(toPtr);
-    const data = UTF8ToString(dataPtr);
+    var to = UTF8ToString(toPtr);
+    var data = UTF8ToString(dataPtr);
 
     if (typeof window.ethereum !== "undefined") {
-      const callParams = {
-        to: to,
-        data: data,
-      };
+      var callParams = { to: to, data: data };
 
       window.ethereum.request({
         method: "eth_call",
-        params: [callParams, "latest"],
+        params: [callParams, "latest"]
       })
-      .then((result) => {
+      .then(function(result) {
         console.log("Contract call result:", result);
-        // Vaihda oikea GameObject-nimi alla:
-        SendMessage("DoorAccess", "OnDoorAccessResult", result);
+        SendMessage("DoorBridgeObject", "HandleDoorAccessResult", result); // aina ohjataan yhteen GameObjectiin
       })
-      .catch((error) => {
+      .catch(function(error) {
         console.error("Contract call failed:", error);
       });
     } else {
@@ -80,32 +76,31 @@ mergeInto(LibraryManager.library, {
         }
       });
     }
-  }, 
+  },
 
   SendTransaction: function (toPtr, dataPtr, valuePtr) {
-    const to = UTF8ToString(toPtr);
-    const data = UTF8ToString(dataPtr);
-    const value = UTF8ToString(valuePtr); // in hex, e.g. "0x0"
+    var to = UTF8ToString(toPtr);
+    var data = UTF8ToString(dataPtr);
+    var value = UTF8ToString(valuePtr);
 
     if (typeof window.ethereum !== "undefined") {
-      const txParams = {
+      var txParams = {
         to: to,
         from: ethereum.selectedAddress,
         data: data,
-        value: value,
+        value: value
       };
 
-      ethereum
-        .request({
-          method: "eth_sendTransaction",
-          params: [txParams],
-        })
-        .then((txHash) => {
-          console.log("Transaction sent:", txHash);
-        })
-        .catch((error) => {
-          console.error("Transaction failed:", error);
-        });
+      window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [txParams]
+      })
+      .then(function(txHash) {
+        console.log("Transaction sent:", txHash);
+      })
+      .catch(function(error) {
+        console.error("Transaction failed:", error);
+      });
     } else {
       console.warn("MetaMask not found");
     }

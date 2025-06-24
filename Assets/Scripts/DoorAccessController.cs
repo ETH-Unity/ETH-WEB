@@ -1,26 +1,32 @@
 using System;
 using UnityEngine;
-using TMPro;
 using UnityEngine.EventSystems;
 using Unity.Netcode;
+
+public enum DoorType
+{
+    Digital,
+    Physical,
+    AdminRoom
+}
 
 public class DoorAccessController : NetworkBehaviour
 {
     [Header("Contract Settings")]
     [SerializeField] private string contractAddress;
+    [SerializeField] private DoorType doorType = DoorType.Digital;
     [SerializeField] private GameObject doorGameObject;
 
     [Header("Animation Settings")]
-    [SerializeField] private Vector3 openOffset = new Vector3(1.5f, 0, 0);
+    [SerializeField] private Vector3 openOffset = new Vector3(1.5f, 0, 0); // Määrittele liikesuunta oven local-suunnassa
     [SerializeField] private float moveSpeed = 1f;
 
     private Vector3 closedPosition;
     private Vector3 targetPosition;
     private bool isPlayerNearby = false;
     private bool hasAccess = false;
-    private WalletLogin walletLogin;
-
     private bool shouldMove = false;
+    private WalletLogin walletLogin;
 
     private NetworkVariable<bool> isDoorOpen = new NetworkVariable<bool>(
         false,
@@ -58,28 +64,28 @@ public class DoorAccessController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (isPlayerNearby && EventSystem.current.currentSelectedGameObject == null)
+        if (!isPlayerNearby) return;
+        if (EventSystem.current.currentSelectedGameObject != null) return;
+
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (!isDoorOpen.Value)
             {
-                if (!isDoorOpen.Value)
+                if (!hasAccess)
                 {
-                    if (!hasAccess)
-                    {
-                        Debug.Log("🔍 Checking access before opening the door...");
-                        CheckDoorAccess();
-                    }
-                    else
-                    {
-                        Debug.Log("✅ Access already verified – sending ServerRpc to open door.");
-                        OpenDoorServerRpc();
-                    }
+                    Debug.Log($"🔍 Checking access for {doorType} before opening...");
+                    CheckDoorAccess();
                 }
                 else
                 {
-                    Debug.Log("🔒 Door is open – sending ServerRpc to close door.");
-                    CloseDoorServerRpc();
+                    Debug.Log($"✅ Access already granted – opening {doorType} door...");
+                    OpenDoorServerRpc();
                 }
+            }
+            else
+            {
+                Debug.Log($"🔒 Closing {doorType} door...");
+                CloseDoorServerRpc();
             }
         }
     }
@@ -99,33 +105,44 @@ public class DoorAccessController : NetworkBehaviour
             return;
         }
 
-        string functionSelector = "0xb7d52701";
+        string functionSelector = GetFunctionSelector(doorType);
         string paddedAddress = walletAddress.Substring(2).PadLeft(64, '0');
         string callData = functionSelector + paddedAddress;
 
-        Debug.Log($"📡 Sending call: {callData}");
+        DoorAccessBridge.CurrentTarget = this;
+
+        Debug.Log($"📡 Sending contract call: {callData}");
         MetaMaskInterop.Call(contractAddress, callData);
+    }
+
+    private string GetFunctionSelector(DoorType type)
+    {
+        return type switch
+        {
+            DoorType.Digital => "0xb7d52701",
+            DoorType.Physical => "0x939cc763",
+            DoorType.AdminRoom => "0x3922d748",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 
     public void OnDoorAccessResult(string result)
     {
-        Debug.Log($"📬 Smart contract responded: {result}");
+        Debug.Log($"📬 Contract result for {doorType}: {result}");
 
         string trueValue = "0x" + new string('0', 63) + "1";
 
         if (result == "0x1" || result.ToLower() == trueValue.ToLower())
         {
-            Debug.Log("✅ User has access to open the door.");
+            Debug.Log($"✅ Access granted to {doorType} door.");
             hasAccess = true;
 
             if (isPlayerNearby && !isDoorOpen.Value)
-            {
                 OpenDoorServerRpc();
-            }
         }
         else
         {
-            Debug.Log("❌ User does NOT have access.");
+            Debug.Log($"❌ Access denied to {doorType} door.");
         }
     }
 
@@ -134,7 +151,8 @@ public class DoorAccessController : NetworkBehaviour
     {
         if (doorGameObject == null) return;
 
-        targetPosition = closedPosition + openOffset;
+        // ✅ Käytä oven omaa local suuntaa globaalin sijaan
+        targetPosition = closedPosition + doorGameObject.transform.TransformDirection(openOffset);
         shouldMove = true;
         isDoorOpen.Value = true;
     }
@@ -151,23 +169,18 @@ public class DoorAccessController : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            Debug.Log("🚶 Player entered near the door");
-            isPlayerNearby = true;
+        if (!other.CompareTag("Player")) return;
 
-            if (walletLogin == null)
-            {
-                walletLogin = other.GetComponentInChildren<WalletLogin>();
-                if (walletLogin != null)
-                {
-                    Debug.Log("🔗 WalletLogin referenced from trigger: " + walletLogin.WalletAddress);
-                }
-                else
-                {
-                    Debug.LogError("❌ WalletLogin not found on player!");
-                }
-            }
+        Debug.Log("🚶 Player entered near the door");
+        isPlayerNearby = true;
+
+        if (walletLogin == null)
+        {
+            walletLogin = other.GetComponentInChildren<WalletLogin>();
+            if (walletLogin != null)
+                Debug.Log("🔗 WalletLogin attached: " + walletLogin.WalletAddress);
+            else
+                Debug.LogError("❌ WalletLogin not found!");
         }
     }
 
