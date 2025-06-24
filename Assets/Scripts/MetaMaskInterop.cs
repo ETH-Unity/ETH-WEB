@@ -15,7 +15,23 @@ public static class MetaMaskInterop
 
     [DllImport("__Internal")]
     private static extern void SendTransaction(string to, string data, string value);
+    
+    [DllImport("__Internal")]
+    private static extern void InitiateTransferJS(string to, string amount, string message, string contractAddress);
+
+    [DllImport("__Internal")]
+    private static extern void SignTransferJS(string contractAddress);
 #endif
+    
+//   public static void Call(string to, string data)
+//   {
+//   #if UNITY_WEBGL && !UNITY_EDITOR
+//       CallContractFunction(to, data);
+//   #else
+//       Debug.Log($"[Editor] MetaMaskInterop.Call would be: to={to}, data={data}");
+//   #endif
+//   }
+
 
     public static void Connect()
     {
@@ -51,5 +67,23 @@ public static class MetaMaskInterop
 #else
         Debug.Log($"🧪 SendTransaction: {to}, data: {data}, value: {value}");
 #endif
+    }
+    
+    public static void InitiateTransfer(string to, string amount, string message, string contractAddress)
+    {
+    #if UNITY_WEBGL && !UNITY_EDITOR
+        InitiateTransferJS(to, amount, message, contractAddress);
+    #else
+        Debug.Log($"[Editor] MetaMaskInterop.InitiateTransfer not available: to={to}, amount={amount}, contractAddress={contractAddress}");
+    #endif
+    }
+
+    public static void SignTransfer(string contractAddress)
+    {
+    #if UNITY_WEBGL && !UNITY_EDITOR
+        SignTransferJS(contractAddress);
+    #else
+        Debug.Log($"[Editor] MetaMaskInterop.SignTransfer not available: contractAddress={contractAddress}");
+    #endif
     }
 }

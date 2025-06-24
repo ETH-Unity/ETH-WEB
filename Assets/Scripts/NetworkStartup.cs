@@ -30,7 +30,7 @@ public class NetworkStartup : MonoBehaviour
         {
             transport.SetConnectionData("0.0.0.0", serverPort);
             transport.UseWebSockets = true;
-            NetworkManager.Singleton.StartHost();
+            NetworkManager.Singleton.StartServer();
         }
         else
         {
