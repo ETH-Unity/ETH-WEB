@@ -2,45 +2,41 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
+using System.Collections;
 
-// PlayerController handles player movement, camera, and wallet address display (HUD and 3D overhead)
+/// Handles player movement, camera, wallet address display, and transfer notifications.
 public class PlayerController : NetworkBehaviour
 {
-    // Movement and camera
     public float moveSpeed = 5f;
     private Camera _playerCamera;
     public float mouseSensitivity = 2f;
     private float _xRotation = 0f;
     private CharacterController _controller;
-    private float verticalVelocity = 0f;
-    private float gravity = -9.81f;
-
 
     public NetworkVariable<FixedString64Bytes> walletAddress = new NetworkVariable<FixedString64Bytes>(
         "",
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
-    [SerializeField] public TMP_Text usernameText, balanceText, overheadNameText;
+    [SerializeField] public TMP_Text addressText, balanceText, overheadNameText, notificationText;
 
     private bool _cameraRotationEnabled = true;
+    public bool IsMenuOpen { get; set; } = false;
 
     private void Awake()
     {
-        if (usernameText == null)
+        if (addressText == null)
         {
             foreach (var text in GetComponentsInChildren<TMP_Text>(true))
             {
                 if (text.gameObject.name.ToLower().Contains("user"))
                 {
-                    usernameText = text;
+                    addressText = text;
                     break;
                 }
             }
-            if (usernameText == null)
-            {
-                usernameText = GetComponentInChildren<TMP_Text>(true);
-            }
+            if (addressText == null)
+                addressText = GetComponentInChildren<TMP_Text>(true);
         }
     }
 
@@ -54,26 +50,42 @@ public class PlayerController : NetworkBehaviour
             _playerCamera.gameObject.SetActive(false);
 
         walletAddress.OnValueChanged += OnAddressChanged;
-        // Set initial UI
         string formatted = FormatAddress(walletAddress.Value.ToString());
-        if (IsOwner && usernameText != null)
-            usernameText.text = formatted;
+        if (IsOwner && addressText != null)
+            addressText.text = formatted;
         if (overheadNameText != null)
             overheadNameText.text = formatted;
+
+        // UI Ownership Control
+        var walletLogin = GetComponentInChildren<WalletLogin>(true);
+        if (walletLogin != null)
+        {
+            if (IsOwner)
+                walletLogin.InitializeForOwner();
+            else
+                walletLogin.DisableForNonOwner();
+        }
+        var userUser = GetComponentInChildren<UserUser>(true);
+        if (userUser != null)
+        {
+            if (IsOwner)
+                userUser.InitializeForOwner();
+            else
+                userUser.DisableForNonOwner();
+        }
     }
 
     private void OnAddressChanged(FixedString64Bytes prev, FixedString64Bytes curr)
     {
         string formatted = FormatAddress(curr.ToString());
-        if (IsOwner && usernameText != null)
-            usernameText.text = formatted;
+        if (IsOwner && addressText != null)
+            addressText.text = formatted;
         if (overheadNameText != null)
             overheadNameText.text = formatted;
     }
 
     private string FormatAddress(string address)
     {
-        // Shorten address for display (0x123...abc)
         if (string.IsNullOrEmpty(address) || address.Length < 8) return address;
         return $"{address.Substring(0, 5)}...{address.Substring(address.Length - 3)}";
     }
@@ -86,8 +98,8 @@ public class PlayerController : NetworkBehaviour
     private void Start()
     {
         string formatted = FormatAddress(walletAddress.Value.ToString());
-        if (IsOwner && usernameText != null)
-            usernameText.text = formatted;
+        if (IsOwner && addressText != null)
+            addressText.text = formatted;
         if (overheadNameText != null)
             overheadNameText.text = formatted;
     }
@@ -96,8 +108,9 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner)
             return;
-    
-        // Mouse look
+        if (IsMenuOpen)
+            return;
+        // Mouse look (FPP) - only if camera rotation is enabled
         if (_cameraRotationEnabled)
         {
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -108,34 +121,16 @@ public class PlayerController : NetworkBehaviour
                 _playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
             transform.Rotate(Vector3.up * mouseX);
         }
-    
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-    
         Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput);
-        moveDirection = transform.TransformDirection(moveDirection);
         moveDirection.Normalize();
-    
-        // Gravity
-        if (_controller != null && !_controller.isGrounded)
-        {
-            verticalVelocity += gravity * Time.deltaTime;
-        }
-        else if (_controller != null && _controller.isGrounded)
-        {
-            verticalVelocity = -1f; // pieni painovoima pitää pelaajan maassa
-        }
-    
-        Vector3 finalMove = moveDirection * moveSpeed + Vector3.up * verticalVelocity;
-    
         if (_controller != null)
-            _controller.Move(finalMove * Time.deltaTime);
+            _controller.Move(transform.TransformDirection(moveDirection) * moveSpeed * Time.deltaTime);
         else
-            transform.Translate(finalMove * Time.deltaTime, Space.World);
+            transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.Self);
     }
 
-
-    // Only the owner can set their own address
     [ServerRpc]
     public void SetAddressServerRpc(string address, ServerRpcParams rpcParams = default)
     {
@@ -148,11 +143,10 @@ public class PlayerController : NetworkBehaviour
         _cameraRotationEnabled = enabled;
     }
 
-    // Update HUD and overhead name
     public void SetAddressHUD(string address)
     {
-        if (IsOwner && usernameText != null)
-            usernameText.text = FormatAddress(address);
+        if (IsOwner && addressText != null)
+            addressText.text = FormatAddress(address);
         if (overheadNameText != null)
             overheadNameText.text = FormatAddress(address);
     }
@@ -161,5 +155,53 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner && balanceText != null)
             balanceText.text = balance;
+    }
+
+    // --- Transfer Notification RPCs ---
+    // Called by UserUser.cs after initiating a transfer. Notifies the recipient.
+    public void SendTransferNotification(string recipientAddress)
+    {
+        if (!IsOwner) return;
+        NotifyRecipientServerRpc(recipientAddress);
+    }
+
+    [ServerRpc]
+    private void NotifyRecipientServerRpc(string recipientAddress)
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (player.walletAddress.Value.ToString().Equals(recipientAddress, System.StringComparison.OrdinalIgnoreCase))
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { player.OwnerClientId }
+                    }
+                };
+                player.ReceiveTransferNotificationClientRpc(clientRpcParams);
+                Debug.Log($"[Server] Sent transfer notification to ClientId {player.OwnerClientId} with address {recipientAddress}");
+                return;
+            }
+        }
+        Debug.LogWarning($"[Server] NotifyRecipientServerRpc: Could not find a connected player with address {recipientAddress}");
+    }
+
+    [ClientRpc]
+    private void ReceiveTransferNotificationClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        if (!IsOwner) return;
+        if (notificationText != null)
+            notificationText.text = "You have a pending transfer to sign!";
+        var userUser = GetComponentInChildren<UserUser>(true);
+        if (userUser != null)
+            userUser.EnableSignButton();
+    }
+
+    public void ClearNotification()
+    {
+        if (IsOwner && notificationText != null)
+            notificationText.text = "";
     }
 }
