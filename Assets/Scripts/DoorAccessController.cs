@@ -24,9 +24,8 @@ public class DoorAccessController : NetworkBehaviour
     private Vector3 closedPosition;
     private Vector3 targetPosition;
     private bool isPlayerNearby = false;
-    private bool hasAccess = false;
     private bool shouldMove = false;
-    private WalletLogin walletLogin;
+    private Collider playerCollider;
 
     private NetworkVariable<bool> isDoorOpen = new NetworkVariable<bool>(
         false,
@@ -71,16 +70,8 @@ public class DoorAccessController : NetworkBehaviour
         {
             if (!isDoorOpen.Value)
             {
-                if (!hasAccess)
-                {
-                    Debug.Log($"🔍 Checking access for {doorType} before opening...");
-                    CheckDoorAccess();
-                }
-                else
-                {
-                    Debug.Log($"✅ Access already granted – opening {doorType} door...");
-                    OpenDoorServerRpc();
-                }
+                Debug.Log($"🔍 Checking access for {doorType} before opening...");
+                CheckDoorAccess();
             }
             else
             {
@@ -92,6 +83,14 @@ public class DoorAccessController : NetworkBehaviour
 
     public void CheckDoorAccess()
     {
+        if (playerCollider == null)
+        {
+            Debug.LogError("Player collider not found. Cannot check access.");
+            return;
+        }
+
+        WalletLogin walletLogin = playerCollider.GetComponentInChildren<WalletLogin>(true);
+
         if (walletLogin == null || string.IsNullOrEmpty(walletLogin.WalletAddress))
         {
             Debug.LogError("❌ Wallet address is missing – connect MetaMask first.");
@@ -135,7 +134,6 @@ public class DoorAccessController : NetworkBehaviour
         if (result == "0x1" || result.ToLower() == trueValue.ToLower())
         {
             Debug.Log($"✅ Access granted to {doorType} door.");
-            hasAccess = true;
 
             if (isPlayerNearby && !isDoorOpen.Value)
                 OpenDoorServerRpc();
@@ -171,25 +169,21 @@ public class DoorAccessController : NetworkBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
+        var networkObject = other.GetComponent<NetworkObject>();
+        if (networkObject == null || !networkObject.IsOwner) return;
+
         Debug.Log("🚶 Player entered near the door");
         isPlayerNearby = true;
-
-        if (walletLogin == null)
-        {
-            walletLogin = other.GetComponentInChildren<WalletLogin>();
-            if (walletLogin != null)
-                Debug.Log("🔗 WalletLogin attached: " + walletLogin.WalletAddress);
-            else
-                Debug.LogError("❌ WalletLogin not found!");
-        }
+        playerCollider = other;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other == playerCollider)
         {
             Debug.Log("🚪 Player left the area near the door");
             isPlayerNearby = false;
+            playerCollider = null;
         }
     }
 

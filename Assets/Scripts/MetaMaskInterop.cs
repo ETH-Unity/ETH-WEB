@@ -14,7 +14,7 @@ public static class MetaMaskInterop
     private static extern void FetchBalanceJS(string address);
 
     [DllImport("__Internal")]
-    private static extern void SendTransaction(string to, string data, string value);
+    private static extern void SendTransaction(string to, string data, string value, string objectName, string successCallback, string errorCallback);
     
     [DllImport("__Internal")]
     private static extern void InitiateTransferJS(string to, string amount, string message, string contractAddress);
@@ -22,16 +22,6 @@ public static class MetaMaskInterop
     [DllImport("__Internal")]
     private static extern void SignTransferJS(string contractAddress);
 #endif
-    
-//   public static void Call(string to, string data)
-//   {
-//   #if UNITY_WEBGL && !UNITY_EDITOR
-//       CallContractFunction(to, data);
-//   #else
-//       Debug.Log($"[Editor] MetaMaskInterop.Call would be: to={to}, data={data}");
-//   #endif
-//   }
-
 
     public static void Connect()
     {
@@ -60,12 +50,12 @@ public static class MetaMaskInterop
 #endif
     }
 
-    public static void SendTx(string to, string data, string value = "0x0")
+    public static void SendTx(string to, string data, string value, string objectName, string successCallback, string errorCallback)
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
-        SendTransaction(to, data, value);
+        SendTransaction(to, data, value, objectName, successCallback, errorCallback);
 #else
-        Debug.Log($"🧪 SendTransaction: {to}, data: {data}, value: {value}");
+        Debug.Log($"🧪 SendTransaction: {to}, data: {data}, value: {value}, objectName: {objectName}, successCallback: {successCallback}, errorCallback: {errorCallback}");
 #endif
     }
     

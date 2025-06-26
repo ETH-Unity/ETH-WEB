@@ -80,31 +80,53 @@ mergeInto(LibraryManager.library, {
     }
   },
 
-  SendTransaction: function (toPtr, dataPtr, valuePtr) {
+  SendTransaction: function (toPtr, dataPtr, valuePtr, objectNamePtr, successCallbackPtr, errorCallbackPtr) {
     var to = UTF8ToString(toPtr);
     var data = UTF8ToString(dataPtr);
     var value = UTF8ToString(valuePtr);
+    var objectName = UTF8ToString(objectNamePtr);
+    var successCallback = UTF8ToString(successCallbackPtr);
+    var errorCallback = UTF8ToString(errorCallbackPtr);
 
     if (typeof window.ethereum !== "undefined") {
-      var txParams = {
-        to: to,
-        from: ethereum.selectedAddress,
-        data: data,
-        value: value
-      };
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+        .then(function(accounts) {
+          var from = accounts[0];
+          var txParams = {
+            to: to,
+            from: from,
+            data: data,
+            value: value
+          };
 
-      window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [txParams]
-      })
-      .then(function(txHash) {
-        console.log("Transaction sent:", txHash);
-      })
-      .catch(function(error) {
-        console.error("Transaction failed:", error);
-      });
+          window.ethereum.request({
+            method: "eth_sendTransaction",
+            params: [txParams]
+          })
+          .then(function(txHash) {
+            console.log("Transaction sent:", txHash);
+            if (typeof window !== 'undefined' && window.unityReady) {
+              SendMessage(objectName, successCallback, txHash);
+            }
+          })
+          .catch(function(error) {
+            console.error("Transaction failed:", error);
+            if (typeof window !== 'undefined' && window.unityReady) {
+              SendMessage(objectName, errorCallback, error.message);
+            }
+          });
+        })
+        .catch(function(error) {
+          console.error("Failed to request accounts:", error);
+          if (typeof window !== 'undefined' && window.unityReady) {
+            SendMessage(objectName, errorCallback, error.message);
+          }
+        });
     } else {
       console.warn("MetaMask not found");
+      if (typeof window !== 'undefined' && window.unityReady) {
+        SendMessage(objectName, errorCallback, "MetaMask not found");
+      }
     }
   },
   ////////////// USERUSER CONTRACT //////////////
