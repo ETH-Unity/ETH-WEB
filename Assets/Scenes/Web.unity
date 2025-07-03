@@ -185,7 +185,7 @@ PrefabInstance:
       objectReference: {fileID: 97942572}
     - target: {fileID: 2530970071220833944, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0x5F537D7BcFD5fD054689B04A71e854ecA959C671
       objectReference: {fileID: 0}
     - target: {fileID: 3627802296190948660, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: m_Name
@@ -487,7 +487,7 @@ PrefabInstance:
       objectReference: {fileID: 610023262}
     - target: {fileID: 8314371326286175512, guid: bd276ef65b4da4945854bc1f9ae1266f, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0x5F537D7BcFD5fD054689B04A71e854ecA959C671
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -630,7 +630,7 @@ PrefabInstance:
       objectReference: {fileID: 1204588397}
     - target: {fileID: 445608673311621941, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0x5F537D7BcFD5fD054689B04A71e854ecA959C671
       objectReference: {fileID: 0}
     - target: {fileID: 1686698748746340505, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: m_Name

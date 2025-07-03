@@ -8,7 +8,7 @@ public class UserUser : MonoBehaviour
 {
     [Header("Contract Settings")]
     [Tooltip("The deployed UserUser contract address")]
-    [SerializeField] private string contractAddress = "0x8c718d3740c463213e554Dc93051c59b4ff727A1";
+    [SerializeField] private string contractAddress = "0xBc1f346372DD8Eee36b201e608681027B41Ff130";
 
     [Header("UI References")]
     [SerializeField] private TMP_InputField amountInput;

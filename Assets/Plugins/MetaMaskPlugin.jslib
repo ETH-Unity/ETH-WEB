@@ -12,6 +12,90 @@ mergeInto(LibraryManager.library, {
     }
   },
 
+  DeployCertificateNFT: async function (abiPtr, bytecodePtr, namePtr, symbolPtr) {
+    const abi = JSON.parse(UTF8ToString(abiPtr));
+    const bytecode = UTF8ToString(bytecodePtr);
+    const name = UTF8ToString(namePtr);
+    const symbol = UTF8ToString(symbolPtr);
+
+    try {
+      const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const factory = new ethers.ContractFactory(abi, bytecode, signer);
+      const contract = await factory.deploy(name, symbol);
+      await contract.deploymentTransaction().wait();
+
+      alert("Contract deployed at: " + contract.target);
+      window.certificateContract = contract; // Save globally if needed later
+    } catch (err) {
+      alert("Deployment error: " + err.message);
+    }
+  },
+
+  MintCertificateNFT: async function (contractAddressPtr, abiPtr, recipientPtr, dataPtr) {
+    const abi = JSON.parse(UTF8ToString(abiPtr));
+    const contractAddress = UTF8ToString(contractAddressPtr);
+    const recipient = UTF8ToString(recipientPtr);
+    const data = UTF8ToString(dataPtr);
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+
+      const tx = await contract.mintWithData(recipient, data);
+      await tx.wait();
+
+      alert("Minted NFT with certificate data to: " + recipient);
+    } catch (err) {
+      alert("Minting error: " + err.message);
+    }
+  },
+
+  GetEthereumLogs: function(fromBlockPtr, toBlockPtr, addressPtr, topicsPtr, callbackObj, callbackFunc) {
+    const fromBlock = UTF8ToString(fromBlockPtr);
+    const toBlock = UTF8ToString(toBlockPtr);
+    const address = UTF8ToString(addressPtr);
+    const topicsStr = UTF8ToString(topicsPtr);
+
+    let topics;
+    try {
+      topics = JSON.parse(topicsStr);
+      console.log("[JS DEBUG] Topics parsed:", topics);
+    } catch (e) {
+      console.error("[JS ERROR] Failed to parse topics:", e, topicsStr);
+      return;
+    }
+
+    const params = [{
+      fromBlock: fromBlock,
+      toBlock: toBlock,
+      address: address,
+      topics: topics
+    }];
+
+    console.log("[JS DEBUG] eth_getLogs params:", params);
+
+    window.ethereum.request({
+      method: 'eth_getLogs',
+      params: params
+    }).then(logs => {
+      console.log("[JS DEBUG] Logs fetched:", logs);
+      const logsJson = JSON.stringify(logs);
+    
+      const lengthBytes = lengthBytesUTF8(logsJson) + 1;
+      const buffer = stackAlloc(lengthBytes);
+      stringToUTF8(logsJson, buffer, lengthBytes);
+    
+      dynCall('vi', callbackFunc, [buffer]);
+    }).catch(error => {
+      console.error("[JS ERROR] Exception in GetEthereumLogs:", error);
+    });
+
+  },
+
   CallContractFunction: function(toPtr, dataPtr) {
     var to = UTF8ToString(toPtr);
     var data = UTF8ToString(dataPtr);
