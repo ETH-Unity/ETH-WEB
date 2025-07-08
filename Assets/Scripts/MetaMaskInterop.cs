@@ -21,6 +21,10 @@ public static class MetaMaskInterop
 
     [DllImport("__Internal")]
     private static extern void SignTransferJS(string contractAddress);
+
+    [DllImport("__Internal")]
+    private static extern void HashFileFromUrl(string url, string objectName, string callback, string errorCallback);
+
 #endif
 
     public static void Connect()
@@ -58,22 +62,29 @@ public static class MetaMaskInterop
         Debug.Log($"🧪 SendTransaction: {to}, data: {data}, value: {value}, objectName: {objectName}, successCallback: {successCallback}, errorCallback: {errorCallback}");
 #endif
     }
-    
+
     public static void InitiateTransfer(string to, string amount, string message, string contractAddress)
     {
-    #if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL && !UNITY_EDITOR
         InitiateTransferJS(to, amount, message, contractAddress);
-    #else
+#else
         Debug.Log($"[Editor] MetaMaskInterop.InitiateTransfer not available: to={to}, amount={amount}, contractAddress={contractAddress}");
-    #endif
+#endif
     }
 
     public static void SignTransfer(string contractAddress)
     {
-    #if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL && !UNITY_EDITOR
         SignTransferJS(contractAddress);
-    #else
+#else
         Debug.Log($"[Editor] MetaMaskInterop.SignTransfer not available: contractAddress={contractAddress}");
-    #endif
+#endif
+    }
+    
+    public static void HashFromUrl(string url, string objectName, string callback, string errorCallback)
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        HashFileFromUrl(url, objectName, callback, errorCallback);
+#endif
     }
 }

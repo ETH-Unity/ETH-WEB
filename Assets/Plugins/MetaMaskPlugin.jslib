@@ -189,9 +189,38 @@ mergeInto(LibraryManager.library, {
           })
           .then(function(txHash) {
             console.log("Transaction sent:", txHash);
-            if (typeof window !== 'undefined' && window.unityReady) {
-              SendMessage(objectName, successCallback, txHash);
+            // Poll for confirmation
+            function pollForReceipt(txHash, attempt) {
+              attempt = attempt || 0;
+              if (attempt > 30) { // ~1 minute
+                if (typeof window !== 'undefined' && window.unityReady) {
+                  SendMessage(objectName, errorCallback, "Transaction not confirmed in time");
+                }
+                return;
+              }
+              window.ethereum.request({ method: 'eth_getTransactionReceipt', params: [txHash] })
+                .then(function(receipt) {
+                  if (receipt && receipt.status && receipt.status === '0x1') {
+                    // Success, send wallet address and hash to Unity
+                    if (typeof window !== 'undefined' && window.unityReady) {
+                      // Pass both txHash and from address as a JSON string
+                      SendMessage(objectName, successCallback, JSON.stringify({ txHash: txHash, from: from }));
+                    }
+                  } else if (receipt && receipt.status === '0x0') {
+                    // Failed
+                    if (typeof window !== 'undefined' && window.unityReady) {
+                      SendMessage(objectName, errorCallback, "Transaction failed");
+                    }
+                  } else {
+                    // Not yet mined, poll again
+                    setTimeout(function() { pollForReceipt(txHash, attempt + 1); }, 2000);
+                  }
+                })
+                .catch(function(err) {
+                  setTimeout(function() { pollForReceipt(txHash, attempt + 1); }, 2000);
+                });
             }
+            pollForReceipt(txHash, 0);
           })
           .catch(function(error) {
             console.error("Transaction failed:", error);
@@ -500,6 +529,38 @@ mergeInto(LibraryManager.library, {
         console.error('SignTransferJS: Error requesting accounts:', error);
         if (typeof window !== 'undefined' && window.unityReady) {
           SendMessage(target, 'OnSignTransferErrorStatic', error.message || 'Failed to request accounts');
+        }
+      });
+  },
+
+  ////////////// DOCUMENT HASHING //////////////
+
+  // Hashes a file from a given URL using SHA-256 and returns the hex digest to Unity
+  HashFileFromUrl: function(urlPtr, objectNamePtr, callbackPtr, errorCallbackPtr) {
+    var url = UTF8ToString(urlPtr);
+    var objectName = UTF8ToString(objectNamePtr);
+    var callback = UTF8ToString(callbackPtr);
+    var errorCallback = UTF8ToString(errorCallbackPtr);
+
+    fetch(url)
+      .then(function(response) {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.arrayBuffer();
+      })
+      .then(function(buffer) {
+        return crypto.subtle.digest('SHA-256', buffer);
+      })
+      .then(function(hashBuffer) {
+        // Convert hash buffer to hex string
+        var hashArray = Array.from(new Uint8Array(hashBuffer));
+        var hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        if (typeof window !== 'undefined' && window.unityReady) {
+          SendMessage(objectName, callback, hashHex);
+        }
+      })
+      .catch(function(error) {
+        if (typeof window !== 'undefined' && window.unityReady) {
+          SendMessage(objectName, errorCallback, error.message);
         }
       });
   }

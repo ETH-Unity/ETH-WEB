@@ -69,7 +69,14 @@ public class PlayerController : NetworkBehaviour
         if (userUser != null)
         {
             if (IsOwner)
+            {
                 userUser.InitializeForOwner();
+                // Notify ChatManager of the local player instance
+                if (ChatManager.Singleton != null)
+                {
+                    ChatManager.Singleton.RegisterLocalPlayer(this);
+                }
+            }
             else
                 userUser.DisableForNonOwner();
         }
@@ -82,6 +89,12 @@ public class PlayerController : NetworkBehaviour
             addressText.text = formatted;
         if (overheadNameText != null)
             overheadNameText.text = formatted;
+
+        // If this is the local player, update the chat manager with the new name
+        if (IsOwner && ChatManager.Singleton != null)
+        {
+            ChatManager.Singleton.UpdateLocalPlayerName(curr.ToString());
+        }
     }
 
     private string FormatAddress(string address)
