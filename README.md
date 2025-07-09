@@ -9,7 +9,7 @@ This project is a proof-of-concept exploring the integration of browser-based wa
 -  **Client-Server Model**: The Unity Editor acts as the authoritative server, managing game state. WebGL builds connect as clients.
 
 -  **Networking**: Uses Unity's Netcode for GameObjects, with the Unity Transport configured for WebSockets to support browser-based clients.
-- 
+  
 -  **Blockchain Integration**: Communication between Unity's C# environment and the browser's JavaScript is handled by a custom `MetaMaskPlugin.jslib` library. This allows for wallet interactions and transaction signing.
 
 ## Features
@@ -39,9 +39,8 @@ This project is a proof-of-concept exploring the integration of browser-based wa
 ### Configuration
 
 -  **Network**: Server IP and port can be configured in the inspector through NetworkManager GameObject. It defaults to `127.0.0.1:7777`.
-- 
 -  **Smart Contracts**: Contract addresses deployed by the user must be manually set in the Inspector. Open the relevant GameObjects or prefabs (e.g., the player prefab) and assign the contract address to the serialized fields of the scripts that use it.
-- 
+
 ## How to Run
 
 ### 1. Start the Server
