@@ -42,11 +42,17 @@ public class DeviceManager : NetworkBehaviour
         // Subscribe to value changes for client-side visual updates
         syncedTemperature.OnValueChanged += OnTemperatureChanged;
         syncedFanSpeed.OnValueChanged += OnFanSpeedChanged;
-        
+
         if (IsServer)
         {
+            // Set contract address and private key from config
+            var config = FindFirstObjectByType<NetworkStartup>()?.config;
+            if (config != null)
+            {
+                contractAddress = config.DeviceDeviceContractAddress;
+                sensorPrivateKey = config.DeviceDeviceWalletPrivateKey;
+            }
             InitializeBlockchainConnection();
-            
             // Runs the device cycle every 10 seconds, starting 2 seconds after spawn
             InvokeRepeating(nameof(DeviceCycle), 2f, 10f);
         }

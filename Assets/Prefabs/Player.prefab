@@ -60,6 +60,7 @@ GameObject:
   - component: {fileID: 1668663004264795850}
   - component: {fileID: 4596945079520228862}
   - component: {fileID: 6146248931342451460}
+  - component: {fileID: -6485704766183164620}
   - component: {fileID: 7247549900891816463}
   - component: {fileID: 783588223838603933}
   - component: {fileID: 1239176435107748877}
@@ -326,6 +327,19 @@ MonoBehaviour:
   balanceText: {fileID: 610898606976251966}
   overheadNameText: {fileID: 576567142117057398}
   notificationText: {fileID: 1876998685274634506}
+--- !u!114 &-6485704766183164620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148342148016112711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c84527316d39f845bfb6dadd665cc69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!143 &7247549900891816463
 CharacterController:
   m_ObjectHideFlags: 0
@@ -375,7 +389,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 569a5599e6db0914d98e621dd1860647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contractAddress: 0x85100fA73F3Cd785296D9b23049001D158cf3d53
+  contractAddress: 
   amountInput: {fileID: 3512764900793990147}
   messageInput: {fileID: 857279277278783181}
   sendButton: {fileID: 8948672610863344088}
@@ -397,7 +411,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  contractAddress: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
+  contractAddress: 
   userAddressInput: {fileID: 934558916924337675}
   roleDropdown: {fileID: 5764433090679980087}
   physicalAccessToggle: {fileID: 8913122937592984823}
@@ -424,7 +438,7 @@ MonoBehaviour:
   urlInputField: {fileID: 5276569672273039287}
   hashButton: {fileID: 6771169526926812439}
   resultText: {fileID: 4163879882643398767}
-  contractAddress: 0x80Fd42C15D63b3720429392a2809071b77f1C0BF
+  contractAddress: 
 --- !u!1 &1743639640808806114
 GameObject:
   m_ObjectHideFlags: 0
@@ -829,7 +843,7 @@ MonoBehaviour:
   statusText: {fileID: 6980434718589222401}
   abiJson: {fileID: 4900000, guid: 8a86b6ac67409a343a62ee6202f01b0c, type: 3}
   bytecodeText: {fileID: 4900000, guid: 04e4ad8c08d84dd4e8e137c41805f6dd, type: 3}
-  contractAddress: 0x0445730F66A46023A6a84333c8941fC6340b33C7
+  contractAddress: 
 --- !u!1001 &1874528980011137053
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -852,7 +866,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2474387877906225587, guid: e91e0465edcbc9e489d2ed88678eb9cf, type: 3}
       propertyPath: m_Value
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4452989814524737601, guid: e91e0465edcbc9e489d2ed88678eb9cf, type: 3}
       propertyPath: m_Pivot.x

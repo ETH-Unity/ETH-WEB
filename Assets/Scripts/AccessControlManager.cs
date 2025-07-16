@@ -100,6 +100,11 @@ public class AccessControlManager : NetworkBehaviour
 
     private void SendAccessTransaction(string functionSelector)
     {
+        // Ensure contract address is set from config if empty
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
         string userAddress = userAddressInput.text;
         string expirationString = expirationInput.text;
 
@@ -142,11 +147,21 @@ public class AccessControlManager : NetworkBehaviour
 
     public void ChangeAccess()
     {
+        // Always fetch contract address from config before call
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
         SendAccessTransaction(CHANGE_ACCESS_SELECTOR);
     }
 
     public void RevokeAccess()
     {
+        // Always fetch contract address from config before call
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
         string userAddress = userAddressInput.text;
 
         if (!ValidateAddress(userAddress)) return;

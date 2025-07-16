@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 public class LogScreen : MonoBehaviour
 {
     public TMP_Text logText; 
-    [SerializeField] private string contractAddress = "0x2792A31d5735658bc56357e741C3136feF3E2C92";
+    [SerializeField] private string contractAddress = "";
     private List<string> eventLogs = new List<string>(); 
     private bool isFirstFetch = true; 
     private bool isFetching = false; 
@@ -19,6 +19,12 @@ public class LogScreen : MonoBehaviour
 
     private void Start()
     {
+        // Use config value if inspector field is empty
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
+        Debug.Log($"[LogScreen] contractAddress in use: {contractAddress}");
         if (logText == null)
         {
             Debug.LogError("logText is not assigned!");

@@ -421,7 +421,7 @@ PrefabInstance:
       objectReference: {fileID: 97942572}
     - target: {fileID: 2530970071220833944, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: contractAddress
-      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3627802296190948660, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: m_Name
@@ -678,9 +678,9 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   fanBlade: {fileID: 834244187}
   temperatureDisplay: {fileID: 2096070896}
-  rpcUrl: http://localhost:8545
-  contractAddress: 0x995F6da8Fe0B5fCDB8483dfEA70c35dC229d99D7
-  sensorPrivateKey: 0x61dced5af778942996880120b303fc11ee28cc8e5036d2fdff619b5675ded3f0
+  rpcUrl: 
+  contractAddress: 
+  sensorPrivateKey: 
   syncedTemperature:
     m_InternalValue: 25
   syncedFanSpeed:
@@ -799,7 +799,7 @@ PrefabInstance:
       objectReference: {fileID: 610023262}
     - target: {fileID: 8314371326286175512, guid: bd276ef65b4da4945854bc1f9ae1266f, type: 3}
       propertyPath: contractAddress
-      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -958,7 +958,7 @@ PrefabInstance:
       objectReference: {fileID: 1204588397}
     - target: {fileID: 445608673311621941, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: contractAddress
-      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1686698748746340505, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: m_Name
@@ -1174,7 +1174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logText: {fileID: 1214016348}
-  contractAddress: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
+  contractAddress: 
 --- !u!1 &1251167688 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1686698748746340505, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
@@ -1792,8 +1792,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a2a1958e64cdcb438f821ba3d8c66a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverIpAddress: 127.0.0.1
-  serverPort: 7777
+  config:
+    UserUserContractAddress: 
+    UserDeviceContractAddress: 
+    DeviceDeviceContractAddress: 
+    DeviceDeviceWalletPrivateKey: 
+    DocumentHashhingContractAddress: 
+    NFTContractAddress: 
+    rpcUrl: 
+    chainId: 
+    serverIpAddress: 127.0.0.1
+    serverPort: 7777
+  statusText: {fileID: 0}
 --- !u!114 &2119946971
 MonoBehaviour:
   m_ObjectHideFlags: 0

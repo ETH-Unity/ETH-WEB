@@ -26,6 +26,11 @@ public class UserUser : MonoBehaviour
     private void Awake()
     {
         _playerController = GetComponentInParent<PlayerController>();
+        // Set contract address from config if not set in inspector
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserUserContractAddress;
+        }
     }
 
    
@@ -103,6 +108,11 @@ public class UserUser : MonoBehaviour
     /// Called when the send button is clicked. Initiates a transfer.
     public void OnSendClicked()
     {
+        // Ensure contract address is set from config if empty
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserUserContractAddress;
+        }
         if (string.IsNullOrEmpty(_selectedRecipientAddress))
         {
             if (statusText != null)
@@ -132,6 +142,11 @@ public class UserUser : MonoBehaviour
     /// Called when the sign transfer button is clicked. Signs the transfer.
     public void OnSignTransferClicked()
     {
+        // Ensure contract address is set from config if empty
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserUserContractAddress;
+        }
         if (string.IsNullOrEmpty(contractAddress))
         {
             if (statusText != null)

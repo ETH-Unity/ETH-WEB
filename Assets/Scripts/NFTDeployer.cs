@@ -35,6 +35,11 @@ public class NFTDeployer : MonoBehaviour
     {
         if (deployButton != null) deployButton.onClick.AddListener(OnDeployClicked);
         if (mintButton != null) mintButton.onClick.AddListener(OnMintClicked);
+        // Set contract address from config if not set in inspector
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.NFTContractAddress;
+        }
     }
 
     void OnDeployClicked()

@@ -150,7 +150,7 @@ mergeInto(LibraryManager.library, {
       })
       .then(function(result) {
         console.log("Contract call result:", result);
-        SendMessage("DoorBridgeObject", "HandleDoorAccessResult", result); // aina ohjataan yhteen GameObjectiin
+        SendMessage("DoorBridgeObject", "HandleDoorAccessResult", result);
       })
       .catch(function(error) {
         console.error("Contract call failed:", error);

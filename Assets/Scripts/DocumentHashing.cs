@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+
 public class DocumentHashing : MonoBehaviour
 {
 
@@ -29,6 +30,11 @@ public class DocumentHashing : MonoBehaviour
     {
         if (hashButton != null)
             hashButton.onClick.AddListener(OnHashButtonClicked);
+        // Set contract address from config if not set in inspector
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.DocumentHashhingContractAddress;
+        }
     }
 
     private void OnDestroy()
@@ -44,6 +50,12 @@ public class DocumentHashing : MonoBehaviour
         {
             SetResultText("Please enter a valid URL.");
             return;
+        }
+        // Use config value if inspector field is empty
+        string effectiveContractAddress = contractAddress;
+        if (string.IsNullOrWhiteSpace(effectiveContractAddress) && ClientConfigLoader.Config != null)
+        {
+            effectiveContractAddress = ClientConfigLoader.Config.DocumentHashhingContractAddress;
         }
 #if UNITY_WEBGL && !UNITY_EDITOR
         MetaMaskInterop.HashFromUrl(urlInputField.text, gameObject.name, nameof(OnHashResult), nameof(OnHashError));
@@ -61,10 +73,16 @@ public class DocumentHashing : MonoBehaviour
     {
         SetResultText($"SHA-256 Hash:\n{hash}\nRequesting signature...");
         _lastSignedHash = hash;
-#if UNITY_WEBGL && !UNITY_EDITOR
-        if (string.IsNullOrEmpty(contractAddress) || contractAddress.Length != 42 || !contractAddress.StartsWith("0x"))
+        // Use config value if inspector field is empty
+        string effectiveContractAddress = contractAddress;
+        if (string.IsNullOrWhiteSpace(effectiveContractAddress) && ClientConfigLoader.Config != null)
         {
-            SetResultText("Invalid contract address. Please set it in the Inspector.");
+            effectiveContractAddress = ClientConfigLoader.Config.DocumentHashhingContractAddress;
+        }
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (string.IsNullOrEmpty(effectiveContractAddress) || effectiveContractAddress.Length != 42 || !effectiveContractAddress.StartsWith("0x"))
+        {
+            SetResultText("Invalid contract address. Please set it in the Inspector or via config.");
             return;
         }
         // Prepare data for signDocument(bytes32)
@@ -78,7 +96,7 @@ public class DocumentHashing : MonoBehaviour
         }
         string data = "0x166cba38" + h;
         // Call SendTransaction (value = 0)
-        MetaMaskInterop.SendTx(contractAddress, data, "0x0", gameObject.name, SIGN_SUCCESS_CALLBACK, SIGN_ERROR_CALLBACK);
+        MetaMaskInterop.SendTx(effectiveContractAddress, data, "0x0", gameObject.name, SIGN_SUCCESS_CALLBACK, SIGN_ERROR_CALLBACK);
 #else
         SetResultText($"Hash: {hash}\nSigning only works in WebGL build.");
 #endif

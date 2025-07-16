@@ -18,7 +18,7 @@ public class DoorAccessController : NetworkBehaviour
     [SerializeField] private GameObject doorGameObject;
 
     [Header("Animation Settings")]
-    [SerializeField] private Vector3 openOffset = new Vector3(1.5f, 0, 0); // Määrittele liikesuunta oven local-suunnassa
+    [SerializeField] private Vector3 openOffset = new Vector3(1.5f, 0, 0);
     [SerializeField] private float moveSpeed = 1f;
 
     private Vector3 closedPosition;
@@ -35,6 +35,11 @@ public class DoorAccessController : NetworkBehaviour
 
     private void Start()
     {
+        // Set contract address from config if not set in inspector
+        if (string.IsNullOrWhiteSpace(contractAddress) && ClientConfigLoader.Config != null)
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
         if (doorGameObject != null)
         {
             closedPosition = doorGameObject.transform.position;
@@ -83,6 +88,12 @@ public class DoorAccessController : NetworkBehaviour
 
     public void CheckDoorAccess()
     {
+        // Always fetch contract address from config before call
+        if (ClientConfigLoader.Config != null && !string.IsNullOrWhiteSpace(ClientConfigLoader.Config.UserDeviceContractAddress))
+        {
+            contractAddress = ClientConfigLoader.Config.UserDeviceContractAddress;
+        }
+
         if (playerCollider == null)
         {
             Debug.LogError("Player collider not found. Cannot check access.");
@@ -149,7 +160,6 @@ public class DoorAccessController : NetworkBehaviour
     {
         if (doorGameObject == null) return;
 
-        // ✅ Käytä oven omaa local suuntaa globaalin sijaan
         targetPosition = closedPosition + doorGameObject.transform.TransformDirection(openOffset);
         shouldMove = true;
         isDoorOpen.Value = true;
