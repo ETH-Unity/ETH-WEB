@@ -355,86 +355,6 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!1 &85304123
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 85304126}
-  - component: {fileID: 85304124}
-  - component: {fileID: 85304125}
-  m_Layer: 0
-  m_Name: DeviceManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &85304124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 85304123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1460943146
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
---- !u!114 &85304125
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 85304123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afb8920909323184ab4f116fb06c870d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  fanBlade: {fileID: 0}
-  temperatureDisplay: {fileID: 0}
-  rpcUrl: http://localhost:8545
-  contractAddress: 
-  sensorPrivateKey: 
-  syncedTemperature:
-    m_InternalValue: 25
-  syncedFanSpeed:
-    m_InternalValue: 100
---- !u!4 &85304126
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 85304123}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.830334, y: -5.353889, z: -7.6666455}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &97942571
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -501,7 +421,7 @@ PrefabInstance:
       objectReference: {fileID: 97942572}
     - target: {fileID: 2530970071220833944, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
       objectReference: {fileID: 0}
     - target: {fileID: 3627802296190948660, guid: a9b654d3f99b2e549bd67425732a3569, type: 3}
       propertyPath: m_Name
@@ -759,8 +679,8 @@ MonoBehaviour:
   fanBlade: {fileID: 834244187}
   temperatureDisplay: {fileID: 2096070896}
   rpcUrl: http://localhost:8545
-  contractAddress: 0x0b8371462d5CB909890eB580D6EC3b62463e3045
-  sensorPrivateKey: 0x9778ac4d8088ffd82f30dbab51ad8e994eb105100073f55631ad24ac4da7094d
+  contractAddress: 0x995F6da8Fe0B5fCDB8483dfEA70c35dC229d99D7
+  sensorPrivateKey: 0x61dced5af778942996880120b303fc11ee28cc8e5036d2fdff619b5675ded3f0
   syncedTemperature:
     m_InternalValue: 25
   syncedFanSpeed:
@@ -879,7 +799,7 @@ PrefabInstance:
       objectReference: {fileID: 610023262}
     - target: {fileID: 8314371326286175512, guid: bd276ef65b4da4945854bc1f9ae1266f, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1038,7 +958,7 @@ PrefabInstance:
       objectReference: {fileID: 1204588397}
     - target: {fileID: 445608673311621941, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: contractAddress
-      value: 0x7EE96f91d27777ff71d6eeC5CF95bAe81c14DA2b
+      value: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
       objectReference: {fileID: 0}
     - target: {fileID: 1686698748746340505, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
       propertyPath: m_Name
@@ -1205,6 +1125,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7079969609362783594, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8287215956389978842, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
@@ -1216,8 +1140,41 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6442924188365603681, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1214016349}
   m_SourcePrefab: {fileID: 100100000, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
+--- !u!1 &1214016347 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6442924188365603681, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
+  m_PrefabInstance: {fileID: 1214016346}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1214016348 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7079969609362783594, guid: ac7b9791de9b5224fa8d15a57d290af4, type: 3}
+  m_PrefabInstance: {fileID: 1214016346}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1214016349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1214016347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dddfa1ccd3cf0d847991e8aad7599d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logText: {fileID: 1214016348}
+  contractAddress: 0xFd39c21AEeCC160d317f6D56aACe63BD6Ef5ae6C
 --- !u!1 &1251167688 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1686698748746340505, guid: feff6bc47c8c43e4ebf7892aae50409e, type: 3}
@@ -1911,4 +1868,3 @@ SceneRoots:
   - {fileID: 1388959868}
   - {fileID: 1998098141}
   - {fileID: 67884800}
-  - {fileID: 85304126}

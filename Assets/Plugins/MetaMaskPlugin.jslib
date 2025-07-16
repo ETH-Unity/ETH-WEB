@@ -20,14 +20,14 @@ mergeInto(LibraryManager.library, {
 
     try {
       const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
 
       const factory = new ethers.ContractFactory(abi, bytecode, signer);
       const contract = await factory.deploy(name, symbol);
-      await contract.deploymentTransaction().wait();
+      await contract.deployed(); // Changed to deployed() for ethers.js 5.7.2
 
-      alert("Contract deployed at: " + contract.target);
+      alert("Contract deployed at: " + contract.address); // Changed to contract.address for 5.7.2
       window.certificateContract = contract; // Save globally if needed later
     } catch (err) {
       alert("Deployment error: " + err.message);
@@ -41,7 +41,7 @@ mergeInto(LibraryManager.library, {
     const data = UTF8ToString(dataPtr);
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(contractAddress, abi, signer);
 
@@ -54,46 +54,87 @@ mergeInto(LibraryManager.library, {
     }
   },
 
-  GetEthereumLogs: function(fromBlockPtr, toBlockPtr, addressPtr, topicsPtr, callbackObj, callbackFunc) {
-    const fromBlock = UTF8ToString(fromBlockPtr);
-    const toBlock = UTF8ToString(toBlockPtr);
-    const address = UTF8ToString(addressPtr);
-    const topicsStr = UTF8ToString(topicsPtr);
+  FetchEvents: function (contractAddressPtr) {
+    const goQuorumUrl = 'http://127.0.0.1:8545/';
+    const contractAddress = UTF8ToString(contractAddressPtr);
+    const abi = [];
 
-    let topics;
-    try {
-      topics = JSON.parse(topicsStr);
-      console.log("[JS DEBUG] Topics parsed:", topics);
-    } catch (e) {
-      console.error("[JS ERROR] Failed to parse topics:", e, topicsStr);
-      return;
-    }
+    window.fetchEventsPromise = new Promise((resolve) => {
+      async function fetchEvents() {
+        if (typeof ethers === 'undefined') {
+          resolve([]);
+          return;
+        }
+        const provider = new ethers.providers.JsonRpcProvider(goQuorumUrl);
+        const latestBlock = await provider.getBlockNumber();
+        const contract = new ethers.Contract(contractAddress, abi, provider);
 
-    const params = [{
-      fromBlock: fromBlock,
-      toBlock: toBlock,
-      address: address,
-      topics: topics
-    }];
+        const accessGrantedTopic = '0x63ce0491e0a472b0c075ee573508783b99fd05c052ff2686e3e5f02a68296558';
+        const accessChangedTopic = '0x68a6122e97cdf8bb010b2d6a057baf7ec345e5c0e2af2c2fe644939ce04cd393';
+        const accessRevokedTopic = '0x1b9b72fde9da721e70e6aca3b0cf4cbe73e82765ef1f280157740376531bfdd8';
 
-    console.log("[JS DEBUG] eth_getLogs params:", params);
+        const lookbackBlocks = 100;
+        const fromBlock = latestBlock > lookbackBlocks ? latestBlock - lookbackBlocks : 0;
+        const toBlock = latestBlock;
 
-    window.ethereum.request({
-      method: 'eth_getLogs',
-      params: params
-    }).then(logs => {
-      console.log("[JS DEBUG] Logs fetched:", logs);
-      const logsJson = JSON.stringify(logs);
-    
-      const lengthBytes = lengthBytesUTF8(logsJson) + 1;
-      const buffer = stackAlloc(lengthBytes);
-      stringToUTF8(logsJson, buffer, lengthBytes);
-    
-      dynCall('vi', callbackFunc, [buffer]);
-    }).catch(error => {
-      console.error("[JS ERROR] Exception in GetEthereumLogs:", error);
+        try {
+          const accessGrantedLogs = await provider.getLogs({
+            address: contractAddress,
+            topics: [accessGrantedTopic],
+            fromBlock: fromBlock,
+            toBlock: toBlock
+          });
+          const accessChangedLogs = await provider.getLogs({
+            address: contractAddress,
+            topics: [accessChangedTopic],
+            fromBlock: fromBlock,
+            toBlock: toBlock
+          });
+          const accessRevokedLogs = await provider.getLogs({
+            address: contractAddress,
+            topics: [accessRevokedTopic],
+            fromBlock: fromBlock,
+            toBlock: toBlock
+          });
+
+          let logs = [];
+          accessGrantedLogs.forEach(log => {
+            try {
+              const parsedLog = ethers.utils.defaultAbiCoder.decode(['uint8', 'bool', 'bool'], log.data);
+              logs.push(`AccessGranted: User ${log.topics[1].slice(26)} (hex), Role: ${parsedLog[0]}, Physical: ${parsedLog[1]}, Digital: ${parsedLog[2]} at block ${log.blockNumber}`);
+            } catch (e) {
+              // Silently handle decoding error
+            }
+          });
+          accessChangedLogs.forEach(log => {
+            try {
+              const parsedLog = ethers.utils.defaultAbiCoder.decode(['uint8', 'bool', 'bool', 'bool', 'uint256'], log.data);
+              logs.push(`AccessChanged: User ${log.topics[1].slice(26)} (hex), Role: ${parsedLog[0]}, Physical: ${parsedLog[1]}, Digital: ${parsedLog[2]}, AdminRoom: ${parsedLog[3]}, Expiration: ${parsedLog[4]} at block ${log.blockNumber}`);
+            } catch (e) {
+              // Silently handle decoding error
+            }
+          });
+          accessRevokedLogs.forEach(log => {
+            try {
+              logs.push(`AccessRevoked: User ${log.topics[1].slice(26)} at block ${log.blockNumber}`);
+            } catch (e) {
+              // Silently handle decoding error
+            }
+          });
+
+          resolve(logs);
+        } catch (error) {
+          resolve([]);
+        }
+      }
+      fetchEvents();
     });
 
+    window.fetchEventsPromise.then(logs => {
+      window.unityInstance.SendMessage('LogScreen', 'ReceiveEvents', JSON.stringify(logs));
+    }).catch(error => {
+      window.unityInstance.SendMessage('LogScreen', 'ReceiveEvents', JSON.stringify(['Error fetching events: ' + error.message]));
+    });
   },
 
   CallContractFunction: function(toPtr, dataPtr) {
