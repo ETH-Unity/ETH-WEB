@@ -30,26 +30,38 @@ This project is a proof-of-concept exploring the integration of browser-based wa
 
 -  **Ethereum network and smart contracts**: [A private/local network and smart contracts.](https://github.com/ETH-Unity/EthNetwork)
 
-### Installation
+### Prebuilt Releases
+
+Prebuilt server executables and WebGL client builds are available in the Releases section.
+
+The release zip includes:
+
+- The server executable in a folder with a config.json you must edit with your contract addresses, private keys, RPC URL, and chain ID.
+
+- The WebGL build folder, ready to be served with any local web server.
+
+- WebGL Build: Download and serve the WebGL build using any local web server. Clients connect to the server using the configured IP and port.
+
+### Installation in Unity (Alternative)
 
 1. Clone the repository.
 
 2. Open the project in Unity Hub. Unity will import all the required packages listed in the manifest.
 
-### Configuration
+## Configuration
 
 -  **Network**: Server IP and port can be configured in the inspector through NetworkManager GameObject. It defaults to `127.0.0.1:7777`.
 -  **Smart Contracts**: Contract addresses deployed by the user must be manually set in the Inspector. Open the relevant GameObjects or prefabs (e.g., the player prefab) and assign the contract address to the serialized fields of the scripts that use it.
 
-## How to Run
+# How to Run
 
-### 1. Start the Server
+## 1. Start the Server
 
 - Open the `Assets/Scenes/Web.unity` scene.
 
 - Enter Play Mode in the Unity Editor. The server will start automatically.
 
-### 2. Run the Client
+## 2. Run the Client
 
 - Go to `File > Build Settings`.
 
